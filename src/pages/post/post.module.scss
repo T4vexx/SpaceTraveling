@@ -6,5 +6,49 @@
 .container {
     max-width: 1120px;
     padding: 0 2rem;
-    margin-top: 1.25rem;
+    margin: 5rem auto;
+
+    .title {
+        font-weight: 700;
+        color: #F8F8F8;
+        font-size: 48px;
+        letter-spacing: -0.5px;
+    }
+
+    .infos {
+        display: inline-flex;
+        font-weight: 400;
+        font-size: 14px;
+        color: #BBBBBB;
+        margin-top: 1.5rem;
+
+        .fiIcons {
+            margin-right: 0.5rem;
+        }
+
+        .fiIcons:not(:first-child) {
+            margin-left: 2rem
+        }
+    }
+
+    .conteudo {
+        margin-top: 4rem;
+        
+        strong {
+            font-weight: 700;
+            font-size: 36px;
+            color: #F8F8F8;
+        }
+
+        div {
+            font-weight: 400;
+            font-size: 18px;
+            color: #D7D7D7;
+            margin-top: 4rem;
+
+            p {
+                margin-top: 2rem;
+            }
+        }
+    }
 }
