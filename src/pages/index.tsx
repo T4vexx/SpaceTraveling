@@ -108,7 +108,7 @@ export const getStaticProps: GetStaticProps = async () => {
     pageSize: 1,
   });
 
-  const result = postsResponse.results.map(post => {
+  const result:Post[] = postsResponse.results.map(post => {
     return {
       uid: post.uid,
       first_publication_date: format(
