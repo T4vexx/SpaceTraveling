@@ -35,7 +35,7 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post({ post }:PostProps): JSX.Element {
+export default function Post({ post }: PostProps): JSX.Element {
   const router = useRouter();
 
   if (router.isFallback) {
@@ -105,8 +105,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await prismic.query([
     Prismic.predicates.at('document.type', 'posts')
   ],{
-    fetch: ['posts.title'],
-    pageSize: 2,
+    fetch: ['posts.title', 'post.subtitle', 'post.author'],
+    pageSize: 3,
   });
 
   const paths = posts.results.map(post => ({
@@ -128,7 +128,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
-      banner: response.data.banner,
+      banner: {
+        url: response.data.banner.url ?? null,
+      },
       author: response.data.author,
       content: response.data.content,
     },
@@ -138,6 +140,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       post,
     },
-    revalidate: 60*60*24, // 24 horas
+    revalidate: 60*30, // 24 horas
   }
 };

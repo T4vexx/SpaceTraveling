@@ -14,6 +14,7 @@ import { RichText } from 'prismic-dom';
 import  Head  from 'next/head';
 import Link from 'next/link'
 import { useEffect, useState } from 'react';
+import Header from '../components/Header';
 
 interface Post {
   uid?: string;
@@ -45,17 +46,11 @@ export default function Home({ postsPagination }: HomeProps) {
     response.json().then((json) => {
       const outPutNewPosts = {
         uid: json.results[0].uid,
-        first_publication_date: format(
-          new Date(json.results[0].last_publication_date),
-          "d MMM y",
-          {
-            locale: ptBR,
-          }
-        ),
+        first_publication_date: json.results[0].first_publication_date,
         data: {
-          title: RichText.asText(json.results[0].data.title),
-          subtitle: RichText.asText(json.results[0].data.subtitle),
-          author: RichText.asText(json.results[0].data.author),
+          title: json.results[0].data.title,
+          subtitle: json.results[0].data.subtitle,
+          author: json.results[0].data.author,
         }
       }
       setPosts([...posts,outPutNewPosts])
@@ -74,18 +69,28 @@ export default function Home({ postsPagination }: HomeProps) {
       <Head>
         <title>Home | SpaceTraveling</title>
       </Head>
+      
+      <Header />
+
       <main className={styles.postsContainer}> 
         <div className={styles.postsContent}>
           {posts.map(post => (
-            <Link href={`/post/${post.uid}`}>
-              <a key={post.uid}>
-                  <strong>{post.data.title}</strong>
-                  <p>{post.data.subtitle}</p>
+            <Link href={`/post/${post.uid}`} key={post.uid}>
+              <a>
+                  <strong>{RichText.asText(post.data.title)}</strong>
+                  <p>{RichText.asText(post.data.subtitle)}</p>
                   <div>
                     <FiCalendar className={styles.icons} />
-                    <time>{post.first_publication_date}</time>
+                    <time>{format(
+                        new Date(post.first_publication_date),
+                        "d MMM y",
+                        {
+                          locale: ptBR,
+                        }
+                      )}
+                    </time>
                     <FiUser className={styles.icons} />
-                    <p>{post.data.author}</p>  
+                    <p>{RichText.asText(post.data.author)}</p>  
                   </div>
               </a>
             </Link>
@@ -108,23 +113,19 @@ export const getStaticProps: GetStaticProps = async () => {
     pageSize: 1,
   });
 
-  const result:Post[] = postsResponse.results.map(post => {
+  const result: Post[] = postsResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.last_publication_date),
-        "d MMM y",
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
-        title: RichText.asText(post.data.title),
-        subtitle: RichText.asText(post.data.subtitle),
-        author: RichText.asText(post.data.author),
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
       }
     }
   });
+
+  console.log()
 
   const next_page = postsResponse.next_page;
   
@@ -135,7 +136,7 @@ export const getStaticProps: GetStaticProps = async () => {
         next_page
       },
     },
-    revalidate: 60*60*24, // 24 horas
+    revalidate: 60*30,// 24 horas
   }
 };
 
