@@ -60,19 +60,19 @@ export default function Post({ post }: PostProps): JSX.Element {
 
     const wordsPerMinute = 200;
 
-    return `${Math.ceil(totalWords / wordsPerMinute)}m`
+    return `${Math.ceil(totalWords / wordsPerMinute)} min`
   }
   
   return (
     <>
       <Head>
-        <title>{RichText.asText(post.data.title)} | Space Traveling</title>
+        <title>{post.data.title} | Space Traveling</title>
       </Head>
 
       <img className={styles.banner} src={post.data.banner.url} alt="banner" />
       <div className={styles.container}>
 
-        <div className={styles.title}>{RichText.asText(post.data.title)}</div>
+        <div className={styles.title}>{post.data.title}</div>
 
         <div className={styles.infos}>
           <FiCalendar className={styles.fiIcons} />
@@ -85,7 +85,7 @@ export default function Post({ post }: PostProps): JSX.Element {
             )}
           </time>
           <FiUser className={styles.fiIcons} />
-          <span>{RichText.asText(post.data.author)}</span>
+          <span>{post.data.author}</span>
           <FiClock className={styles.fiIcons} />
           <span>{averageReadingTime()}</span>
         </div>
@@ -124,21 +124,10 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(slug), {});
 
-  const post: Post = {
-    first_publication_date: response.first_publication_date,
-    data: {
-      title: response.data.title,
-      banner: {
-        url: response.data.banner.url ?? null,
-      },
-      author: response.data.author,
-      content: response.data.content,
-    },
-  };
 
   return {
     props: {
-      post,
+      post: response,
     },
     revalidate: 60*30, // 24 horas
   }

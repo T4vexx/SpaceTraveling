@@ -28,7 +28,7 @@ interface Post {
 
 interface PostPagination {
   next_page: string; 
-  result: Post[];
+  results: Post[];
 }
 
 interface HomeProps {
@@ -36,10 +36,8 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
-  
   const [nextPage, setNextPage] = useState(postsPagination.next_page)
-  const [posts, setPosts] = useState<Post[]>(postsPagination.result)
-  const [showMe, setShowMe] = useState(true)
+  const [posts, setPosts] = useState<Post[]>(postsPagination.results)
 
   function handleShowMoreButton() {
     fetch(nextPage).then((response) => 
@@ -58,11 +56,7 @@ export default function Home({ postsPagination }: HomeProps) {
     }));
   }
 
-  useEffect(() => {
-    if (!nextPage) {
-      setShowMe(false)
-    }
-  }, [posts,nextPage,showMe]);
+  useEffect(() => {}, [posts,nextPage]);
   
   return (
     <>
@@ -77,8 +71,8 @@ export default function Home({ postsPagination }: HomeProps) {
           {posts.map(post => (
             <Link href={`/post/${post.uid}`} key={post.uid}>
               <a>
-                  <strong>{RichText.asText(post.data.title)}</strong>
-                  <p>{RichText.asText(post.data.subtitle)}</p>
+                  <strong>{post.data.title}</strong>
+                  <p>{post.data.subtitle}</p>
                   <div>
                     <FiCalendar className={styles.icons} />
                     <time>{format(
@@ -90,12 +84,18 @@ export default function Home({ postsPagination }: HomeProps) {
                       )}
                     </time>
                     <FiUser className={styles.icons} />
-                    <p>{RichText.asText(post.data.author)}</p>  
+                    <p>{post.data.author}</p>  
                   </div>
               </a>
             </Link>
           ))}
-          <button style={{display: showMe?"block":"none" }} type="button" onClick={() => handleShowMoreButton()}>Carregar mais posts</button>
+          { !! nextPage && (
+            <button 
+              type="button" 
+              onClick={() => handleShowMoreButton()}>
+                Carregar mais posts
+            </button>
+          )}
         </div>
         
       </main>
@@ -113,27 +113,12 @@ export const getStaticProps: GetStaticProps = async () => {
     pageSize: 1,
   });
 
-  const result: Post[] = postsResponse.results.map(post => {
-    return {
-      uid: post.uid,
-      first_publication_date: post.first_publication_date,
-      data: {
-        title: post.data.title,
-        subtitle: post.data.subtitle,
-        author: post.data.author,
-      }
-    }
-  });
-
-  console.log()
-
-  const next_page = postsResponse.next_page;
-  
+  const { next_page } = postsResponse;
   return {
     props: {
       postsPagination: {
-        result,
-        next_page
+        results: postsResponse.results,
+        next_page,
       },
     },
     revalidate: 60*30,// 24 horas
