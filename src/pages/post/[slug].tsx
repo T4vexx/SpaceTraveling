@@ -14,8 +14,11 @@ import { RichText } from 'prismic-dom';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Comments from '../../components/Comments';
+import PreviewButtom from '../../components/PreviewButton';
+import Link from 'next/link';
 
 interface Post {
+  last_publication_date: string | null;
   first_publication_date: string | null;
   data: {
     title: string;
@@ -32,15 +35,35 @@ interface Post {
   };
 }
 
-interface PostProps {
-  post: Post;
+interface NeighborhoodPost {
+  title: string;
+  uid: string;
 }
 
-export default function Post({ post }: PostProps): JSX.Element {
+interface PostProps {
+  post: Post;
+  preview: boolean;
+  nextPost: NeighborhoodPost;
+  previousPost: NeighborhoodPost;
+}
+
+export default function Post({ 
+  post, 
+  preview,
+  nextPost,
+  previousPost  }: PostProps): JSX.Element {
   const router = useRouter();
 
   if (router.isFallback) {
     return <div>Carregando...</div>;
+  }
+
+  function handlingEditedTime() {
+    if (post.last_publication_date === post.first_publication_date) {
+      return null
+    } else {
+      return post.last_publication_date
+    }
   }
 
   function averageReadingTime() {
@@ -90,6 +113,17 @@ export default function Post({ post }: PostProps): JSX.Element {
           <FiClock className={styles.fiIcons} />
           <span>{averageReadingTime()}</span>
         </div>
+        {handlingEditedTime() && (
+          <div className={styles.editedTimeContainer}>
+            <time className={styles.editedTime}>{format(
+            new Date(handlingEditedTime()),
+            "'* editado em 'd MMM y', às' 	HH':'mm",
+            {
+              locale: ptBR,
+            }
+            )}</time>
+          </div>
+        )}
         {post.data.content.map(({heading, body}) => (
           <div className={styles.conteudo} key={heading}>
             <strong>{heading}</strong>
@@ -97,9 +131,33 @@ export default function Post({ post }: PostProps): JSX.Element {
           </div>
         ))} 
 
-        <div className={styles.comments}>
+        <div className={styles.footer}>
+          <div className={styles.navigationContainer}>
+
+            {previousPost && (
+              <div className={styles.previusContainer}>
+                <p>{previousPost.title}</p>
+                <Link href={`/post/${previousPost.uid}`}>
+                  <a>Post anterior</a>
+                </Link>
+              </div>
+            )}
+
+
+            {nextPost && (
+              <div className={styles.nextContainer}>
+                <p>{nextPost.title}</p>
+                <Link href={`/post/${nextPost.uid}`}>
+                  <a>Próximo post</a>
+                </Link>
+              </div>
+            )}  
+
+          </div>
           <Comments />
         </div>
+
+        {preview && <PreviewButtom />}
 
       </div> 
     </>
@@ -125,15 +183,44 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+function creatUnderlyingPost(post, slug): NeighborhoodPost | null {
+  return slug === post.results[0].uid
+    ? null
+    : {
+      title: post.results[0]?.data?.title,
+      uid: post.results[0]?.uid,
+    };
+}
+
+export const getStaticProps: GetStaticProps = async ({ params, preview = false, }) => {
   const { slug } = params;
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(slug), {});
+
+  const responsePreviousPost = await prismic.query(
+    Prismic.Predicates.at('document.type', 'posts'),
+    {
+      pageSize: 1,
+      after: slug,
+      orderings: '[document.first_publication_date desc]',
+    }
+  );
+
+  const responseNextPost = await prismic.query(
+    Prismic.Predicates.at('document.type', 'posts'),
+    { pageSize: 1, after: slug, orderings: '[document.first_publication_date]' }
+  );
+
+  const nextPost = creatUnderlyingPost(responseNextPost, slug);
+  const previousPost = creatUnderlyingPost(responsePreviousPost, slug);
 
 
   return {
     props: {
       post: response,
+      preview,
+      nextPost,
+      previousPost,
     },
     revalidate: 60*30, // 24 horas
   }
