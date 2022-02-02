@@ -134,24 +134,27 @@ export default function Post({
         <div className={styles.footer}>
           <div className={styles.navigationContainer}>
 
+          <div className={styles.previusContainer}>
             {previousPost && (
-              <div className={styles.previusContainer}>
+              <>
                 <p>{previousPost.title}</p>
                 <Link href={`/post/${previousPost.uid}`}>
                   <a>Post anterior</a>
                 </Link>
-              </div>
+              </>
             )}
+            </div>
 
-
+            <div className={styles.nextContainer}>
             {nextPost && (
-              <div className={styles.nextContainer}>
+              <>
                 <p>{nextPost.title}</p>
                 <Link href={`/post/${nextPost.uid}`}>
                   <a>Próximo post</a>
                 </Link>
-              </div>
-            )}  
+              </>
+            )} 
+            </div> 
 
           </div>
           <Comments />
