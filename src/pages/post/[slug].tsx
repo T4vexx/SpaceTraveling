@@ -13,6 +13,7 @@ import styles from './post.module.scss';
 import { RichText } from 'prismic-dom';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import Comments from '../../components/Comments';
 
 interface Post {
   first_publication_date: string | null;
@@ -95,6 +96,8 @@ export default function Post({ post }: PostProps): JSX.Element {
             <div dangerouslySetInnerHTML={{ __html: RichText.asHtml(body) }}/>
           </div>
         ))} 
+
+        <Comments />
       </div> 
     </>
   )
