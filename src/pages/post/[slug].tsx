@@ -97,7 +97,10 @@ export default function Post({ post }: PostProps): JSX.Element {
           </div>
         ))} 
 
-        <Comments />
+        <div className={styles.comments}>
+          <Comments />
+        </div>
+
       </div> 
     </>
   )

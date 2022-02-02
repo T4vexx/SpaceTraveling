@@ -14,5 +14,5 @@ export default function Comments(): JSX.Element{
       anchor.appendChild(script);
     }, [])
 
-    return <div id="inject-comments-for-uterances" />;
+    return <div id="inject-comments-for-uterances"></div>;
 }
